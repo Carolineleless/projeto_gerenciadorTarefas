@@ -1,0 +1,12 @@
+INSTRUÇÕES PARA A CRIAÇÃO DO BANCO DE DADOS:
+
+    - Esse sistema de login está usando o banco de dados MySQL;
+
+    - Criar um banco de dados com qualquer nome;
+
+    - Não é necessário cria a tabela "user", o código cria automaticamente,
+    além disso, é a forma de perceber se ele está conectando corretamente;
+
+    - Abra o arquivo "application.properties" localizado em "src/main/resources/"
+
+    - Altere os <DATABASE_NAME>, <DATABASE_USER> e <DATABASE_PASSWORD> com as credenciais do banco de dados;
