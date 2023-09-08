@@ -25,7 +25,7 @@ public class LoginController {
         return "redirect:/login?error=true";
     }
 
-    @GetMapping("/login")
+    @GetMapping("/")
     public String loginPage() {
         return "login";
     }
