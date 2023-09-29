@@ -21,3 +21,10 @@ See the section about [running tests](https://facebook.github.io/create-react-ap
 
 Dentro da pasta server, você deverá rodar o comando npm run devStart para que ele consiga se acessar ao banco. 
 Em outro terminal, dentro do diretório client, rode npm start. Use o ambiente local na url http://localhost:3000. Exemplo de tela de cadastro: http://localhost:3000/register
+
+Packages para serem instalados:
+### `npm add mysql express nodemon cors`
+### npm `add formik yup`
+### npm `add axios`
+### npm `install bcrypt`
+### npm `install react-router-dom`
