@@ -3,6 +3,7 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import { validationsLogin } from "../model/AuthModel";
 import { login } from "../controller/AuthController";
 import "./Login.css";
+import logo from "../resources/(Logo) ABC Tech.svg"
 
 const Login = () => {
     const handleLogin = (values) => {
@@ -16,40 +17,42 @@ const Login = () => {
     };
 
     return (
-        <div>
-            <h1>Login</h1>
+        <main>
+            <h1>Entrar</h1>
+            <img src={logo} alt="logo" class="logo"/>
+
             <Formik
                 initialValues={{}}
                 onSubmit={handleLogin}
                 validationSchema={validationsLogin}
             >
-                <Form className="login-form">
+                <Form>
+                    <label class="label">E-mail</label>
                     <div className="login-form-group">
                         <Field name="email" className="form-field" placeholder="Email" />
-
                         <ErrorMessage
                             component="span"
                             name="email"
                             className="form-error"
                         />
                     </div>
-                    {/*Outro campo*/}
+                    <label class="label">Senha</label>
                     <div className="form-group">
                         <Field name="password" className="form-field" placeholder="Senha" />
-
                         <ErrorMessage
                             component="span"
                             name="password"
                             className="form-error"
                         />
                     </div>
-
-                    <button className="button" type="submit">
-                        Login
-                    </button>
+                    <input class="submit-button" type="submit" value="Logar"/>
                 </Form>
             </Formik>
-        </div>
+            <section class="login-options">
+                <a href="/recover_password">Recuperar Senha</a>
+                <a href="/register">Criar Conta</a>
+            </section>
+        </main>
     );
 };
 

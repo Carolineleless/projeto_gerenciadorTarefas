@@ -6,10 +6,10 @@ const bcrypt = require("bcrypt");
 const saltRounds = 10;
 
 const db = mysql.createPool({
-    host: "localhost",
+    host: "127.0.0.1",
     user: "root",
-    password: "root",
-    database: "gerenciadorTarefas"
+    password: "P*e*d*r*o*16541815",
+    database: "AbcTechDB"
 });
 
 app.use(express.json());
@@ -26,7 +26,7 @@ app.post("/register", (req, res) => {
     if (result.length == 0) {
       bcrypt.hash(password, saltRounds, (err, hash) => {
         db.query(
-          "INSERT INTO user (email, password) VALUE (?,?)",
+          "INSERT INTO user (email, password) VALUES (?,?)",
           [email, hash],
           (error, response) => {
             if (err) {

@@ -1,0 +1,12 @@
+{
+  "name": "es4a4_project",
+  "version": "1.0.0",
+  "description": "Projeto ABC Tech para gestão de projetos",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
