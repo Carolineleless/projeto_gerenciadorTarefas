@@ -6,10 +6,10 @@ const bcrypt = require("bcrypt");
 const saltRounds = 10;
 
 const db = mysql.createPool({
-    host: "127.0.0.1",
+    host: "localhost", // ALTERAR PARA 127.0.0.1 PARA ERRO DE CONEXAO
     user: "root",
-    password: "P*e*d*r*o*16541815",
-    database: "AbcTechDB"
+    password: "<DB_PASSWORD>",
+    database: "<DB_NAME>"
 });
 
 app.use(express.json());
