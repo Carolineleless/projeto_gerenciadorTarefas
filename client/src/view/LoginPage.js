@@ -3,13 +3,22 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import { validationsLogin } from "../model/AuthModel";
 import { login } from "../controller/AuthController";
 import "./Login.css";
-import logo from "../resources/(Logo) ABC Tech.svg"
+import logo from "../resources/(Logo) ABC Tech.svg";
+import { useNavigate } from 'react-router-dom';
+
 
 const Login = () => {
+    const navigate = useNavigate();
     const handleLogin = (values) => {
         login(values.email, values.password)
             .then((response) => {
-                alert(response.data.msg);
+                if (response.data.msg === "Usuário logado") {
+                    const idLogin = response.data.idLogin;
+                    navigate(`/projetos/${idLogin}`);
+                }
+                else {
+                    console.log("erro ao logar usuario");
+                }
             })
             .catch((error) => {
                 console.error(error);
@@ -19,7 +28,7 @@ const Login = () => {
     return (
         <main>
             <h1>Entrar</h1>
-            <img src={logo} alt="logo" class="logo"/>
+            <img src={logo} alt="logo" class="logo" />
 
             <Formik
                 initialValues={{}}
@@ -45,7 +54,7 @@ const Login = () => {
                             className="form-error"
                         />
                     </div>
-                    <input class="submit-button" type="submit" value="Logar"/>
+                    <input class="submit-button" type="submit" value="Logar" />
                 </Form>
             </Formik>
             <section class="login-options">

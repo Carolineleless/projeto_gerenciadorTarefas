@@ -23,6 +23,7 @@ yarn-debug.log*
 yarn-error.log*
 /server/node_modules
 /server/package-lock.json
+/package-lock.json
 /client/node_modules
 
 
