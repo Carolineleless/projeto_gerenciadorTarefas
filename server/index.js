@@ -91,18 +91,20 @@ app.post("/login", (req, res) => {
   });
 });
 
-app.post("/criarprojeto", (req, res) => {
-  const { name, type, company, startDate, finalDate, restriction, description, team, responsable } = req.body;
+app.post("/criarProjeto", (req, res) => {
+  const { name, type, company, startDate, finalDate, restriction, description, team, responsable, idLogin } = req.body;
+  console.log(name, type, company, startDate, finalDate, restriction, description, team, responsable, idLogin);
 
   db.query(
     "INSERT INTO project (name, type, company, startDate, finalDate, restriction, description, team, responsable) VALUES (?,?,?,?,?,?,?,?,?)",
     [name, type, company, startDate, finalDate, restriction, description, team, responsable],
     (error, response) => {
       if (error) {
-        console.log(error);
+        console.log("errooor:", error);
         res.status(500).json({ error: "Erro ao criar o projeto" });
       } else {
-        res.status(200).json({ msg: "Projeto criado com sucesso" });
+        const idProject = response.insertId;
+        res.status(200).json({ msg: "Projeto criado com sucesso", idProject: idProject });
       }
     }
   );
@@ -110,13 +112,11 @@ app.post("/criarprojeto", (req, res) => {
 
 app.post("/vincularAoProjeto", (req, res) => {
   const idProject = req.body.idProject;
-  const name = req.body.name;
-  const responsable = req.body.responsable
   const email = req.body.email
 
-
-  db.query("SELECT * FROM project WHERE idProject = ? AND name = ? AND responsable = ? ", [idProject, name, responsable], (err, result) => {
+  db.query("SELECT * FROM project WHERE idProject = ? ", [idProject], (err, result) => {
     if (err) {
+
       console.log(err);
       return res.status(500).json({ error: "Erro ao vincular ao projeto" });
     }
@@ -124,21 +124,23 @@ app.post("/vincularAoProjeto", (req, res) => {
     if (result.length !== 0) {
       const project = result[0];
 
-      // Recuperar o idProject
       const idProject = project.idProject;
+      const nameProject = project.name;
 
       db.query("SELECT idLogin FROM user WHERE email = ?", [email], (err, userResult) => {
         if (err) {
-          console.log(err);
+          console.log("erro aqui 1:", err);
           return res.status(500).json({ error: "Erro ao buscar o ID do usuário" });
         }
 
         if (userResult.length === 0) {
+          console.log("erro aqui 2:", err);
           return res.status(404).json({ error: "Usuário não encontrado" });
         }
+
         const idLogin = userResult[0].idLogin;
 
-        db.query("INSERT INTO userProject (idLogin, idProject, nameProject) VALUES (?, ?, ?)", [idLogin, idProject, name], (insertErr, insertResult) => {
+        db.query("INSERT INTO userProject (idLogin, idProject, nameProject) VALUES (?, ?, ?)", [idLogin, idProject, nameProject], (insertErr, insertResult) => {
           if (insertErr) {
             console.log(insertErr);
             return res.status(500).json({ error: "Erro ao inserir dados na tabela userData" });
@@ -148,20 +150,16 @@ app.post("/vincularAoProjeto", (req, res) => {
         });
       })
     } else {
-      res.json({ msg: "Dados incorretos." });
+      res.send({ msg: "Dados incorretos" });
     }
   });
 });
 
-app.listen(3001, () => {
-  console.log("rodando na porta 3001");
-});
-
 app.post("/verProjeto", (req, res) => {
   const idLogin = req.body.idLogin;
-
   db.query("SELECT * FROM userProject WHERE idLogin = ?", [idLogin], (err, result) => {
     if (err) {
+      console.log("na vdd aqui!!!!");
       res.send(err);
     }
 
@@ -171,4 +169,84 @@ app.post("/verProjeto", (req, res) => {
       res.send({ msg: "Nao foi encontrado nenhum projeto vinculado" });
     }
   });
+});
+
+
+app.post("/abrirProjeto", (req, res) => {
+  const idLogin = req.body.idLogin;
+
+  db.query("SELECT * FROM userProject WHERE idLogin = ?", [idLogin], (err, result) => {
+    if (err) {
+      res.send(err);
+    }
+
+    if (result[0].idLogin == idLogin) {
+      db.query("SELECT * FROM project WHERE idProject = ?", [result[0].idProject], (err, result) => {
+        if (err) {
+          res.send(err);
+        }
+        db.query("SELECT * FROM task WHERE idProject = ?", [result[0].idProject], (err, taskResults) => {
+          if (err) {
+            res.send(err);
+            return; // Encerre a execução da função para evitar que o restante do código seja executado em caso de erro
+          }
+          const taskNames = taskResults.map((task) => task.name);
+          const taskDescription = taskResults.map((task) => task.description);
+          const taskStartDate = taskResults.map((task) => task.startDate);
+          const taskFinalDate = taskResults.map((task) => task.finalDate);
+          const taskDependencies = taskResults.map((task) => task.dependencies);
+          const taskStatus = taskResults.map((task) => task.status);
+          const taskResponsable = taskResults.map((task) => task.responsable);
+          const taskObservation = taskResults.map((task) => task.observation);
+
+          res.send({
+            msg: "informacoes obtidas", idProject: result[0].idProject, nameProject: result[0].name, description: result[0].description,
+            members: result[0].team, responsable: result[0].responsable, taskName: taskNames, taskDescription: taskDescription,
+            taskStartDate: taskStartDate, taskFinalDate: taskFinalDate, taskDependencies: taskDependencies, taskStatus: taskStatus, taskResponsable: taskResponsable, taskObservation: taskObservation
+          });
+        });
+      });
+    } else {
+      res.send({ msg: "Nao foi encontrado nenhum projeto vinculado" });
+    }
+  });
+});
+
+app.post("/criarTarefa", (req, res) => {
+  const { idProject, taskName, taskResponsable, taskDescription, taskStartDate, taskFinalDate, taskDependencies, taskObservation, taskStatus } = req.body;
+
+  db.query("SELECT * FROM task WHERE idProject = ? AND name = ?", [idProject, taskName], (err, resultNameTask) => {
+
+    if (err) {
+      res.send("error criar tarefa:", err);
+    }
+    if (resultNameTask.length > 0) {
+      return res.json({ msg: "task com mesmo nome" });
+    } else {
+      db.query("INSERT INTO task (idProject, name, description, startDate, finalDate, dependencies, observation, status, responsable) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", [idProject, taskName, taskDescription, taskStartDate, taskFinalDate, taskDependencies, taskObservation, taskStatus, taskResponsable],
+        (insertErr, insertResult) => {
+          if (insertErr) {
+            console.log(insertErr);
+            return res.status(500).json({ error: "Erro ao criar tarefa" });
+          }
+        });
+      return res.json({ msg: "task inserida com sucesso" });
+    };
+  });
+});
+
+app.post("/excluirTarefa", (req, res) => {
+  const { taskName, idProject } = req.body;
+
+  db.query("DELETE FROM task WHERE idProject = ? AND name = ?", [idProject, taskName], (deleteErr, deleteResult) => {
+    if (deleteErr) {
+      console.log(deleteErr);
+      return res.status(500).json({ error: "Erro ao excluir tarefa" });
+    }
+    return res.json({ msg: "Tarefa excluída com sucesso" });
+  });
+});
+
+app.listen(3001, () => {
+  console.log("rodando na porta 3001");
 });

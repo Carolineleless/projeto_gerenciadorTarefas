@@ -2,20 +2,23 @@ import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { validationsCreateProject } from "../model/CrateProjectModel";
 import { criarProjeto } from "../controller/AuthController";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 
 
 const CreateProject = () => {
+
+  const { idLogin } = useParams();
   const navigate = useNavigate();
 
   const handleCreateProject = (values) => {
-    criarProjeto(values.name, values.type, values.company, values.startDate, values.finalDate, values.restriction, values.description, values.team, values.responsable)
+    criarProjeto(values.name, values.type, values.company, values.startDate, values.finalDate, values.restriction, values.description, values.team, values.responsable, idLogin)
       .then((response) => {
         if (response.data.msg === "Projeto criado com sucesso") {
-          alert("Projeto criado com sucesso. Clique em OK para voltar para a página de projetos.");
+          console.log(response.data);
+          alert("Projeto criado com sucesso. Guarde a senha do seu projeto: " + response.data.idProject);
           setTimeout(() => {
-            navigate("/projetos");
+            navigate(`/projetos/${idLogin}`);
           }, 1000);
         } else {
           console.log("Erro ao criar projeto");

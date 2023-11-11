@@ -7,6 +7,7 @@ const ProjetosPage = () => {
   const [nameProject, setNameProject] = useState("");
   const [projeto, setProjeto] = useState({});
   const { idLogin } = useParams();
+  const [hasProject, setHasProject] = useState(false);
 
   useEffect(() => {
     verProjeto(idLogin)
@@ -14,35 +15,47 @@ const ProjetosPage = () => {
         setProjeto(response.data);
         const projectName = response.data.nameProject;
         setNameProject(projectName);
+        setHasProject(true);
       })
       .catch((error) => {
         console.error(error);
+        setHasProject(false);
       });
   }, [idLogin]);
 
   return (
     <main>
       <h1>Projeto</h1>
-      <p>Nome do Projeto: <br /> {nameProject}</p>
-      <section className="project-list">
-        <div className="project-item">
-          <Link to="/entrar_projeto">
-            <button>Abrir meu projeto</button>
-          </Link>
-        </div>
-        <br />
-        <div className="project-item">
-          <Link to="/vincular_projeto">
-            <button>Vincular-se a um projeto</button>
-          </Link>
-        </div>
-        <br />
-        <div className="project-item">
-          <Link to="/criar_projeto">
-            <button>Criar projeto</button>
-          </Link>
-        </div>
-      </section>
+
+      {hasProject ? (
+        <React.Fragment>
+          <p>Nome do Projeto: <br /> {nameProject}</p>
+          <section className="project-list">
+            <div className="project-item">
+              <Link to={`/abrir_projeto/${idLogin}`}>
+                <button>Abrir meu projeto</button>
+              </Link>
+            </div>
+          </section>
+        </React.Fragment>
+      ) : (
+        <React.Fragment>
+          <p>Você não possui nenhum projeto vinculado.</p>
+          <section className="project-list">
+            <div className="project-item">
+              <Link to={`/vincular_projeto/${idLogin}`}>
+                <button>Vincular-se a um projeto</button>
+              </Link>
+            </div>
+            <br />
+            <div className="project-item">
+              <Link to={`/criar_projeto/${idLogin}`}>
+                <button>Criar projeto</button>
+              </Link>
+            </div>
+          </section>
+        </React.Fragment>
+      )}
     </main>
   );
 };

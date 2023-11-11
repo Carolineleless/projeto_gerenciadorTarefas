@@ -2,14 +2,16 @@ import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { validationsLinkProject } from "../model/LinkProjectModel";
 import { vincularAoProjeto } from "../controller/AuthController";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 
 const LinkProject = () => {
     const navigate = useNavigate();
+    const { idLogin } = useParams();
 
     const handleLinkProject = (values) => {
-        vincularAoProjeto(values.idProject, values.name, values.responsable, values.email)
+        console.log("oioioi:", values.idProject, values.email)
+        vincularAoProjeto(values.idProject, values.email)
             .then((response) => {
                 if (response.data.msg === "Vinculado com sucesso") {
                     const idLogin = response.data.idLogin;
@@ -18,9 +20,12 @@ const LinkProject = () => {
                         navigate(`/projetos/${idLogin}`);
                     }, 1000);
                 }
+                else {
+                    alert("Não foi encontrado nenhum projeto com essas informações.");
+                }
             })
             .catch((error) => {
-                console.error(error);
+                console.error("erro linkProject:", error);
             });
     };
 
@@ -33,33 +38,13 @@ const LinkProject = () => {
                 validationSchema={validationsLinkProject}
             >
                 <Form className="linkProject-form">
-                    <label>Id do projeto</label>
+                    <label>Código do projeto</label>
                     <div className="linkProject-form-group">
                         <Field class="field-form" name="idProject" className="form-field" placeholder="id do projeto" />
                         <br />
                         <ErrorMessage
                             component="span"
                             name="idProject"
-                            className="form-error"
-                        />
-                    </div>
-                    <label>Nome do projeto</label>
-                    <div className="linkProject-form-group">
-                        <Field class="field-form" name="name" className="form-field" placeholder="nome do projeto" />
-                        <br />
-                        <ErrorMessage
-                            component="span"
-                            name="name"
-                            className="form-error"
-                        />
-                    </div>
-                    <label>Responsável pelo projeto</label>
-                    <div className="linkProject-form-group">
-                        <Field class="field-form" name="responsable" className="form-field" placeholder="responsável" />
-                        <br />
-                        <ErrorMessage
-                            component="span"
-                            name="responsable"
                             className="form-error"
                         />
                     </div>
@@ -74,9 +59,11 @@ const LinkProject = () => {
                         />
                     </div>
                     <input type="submit" value="Vincular ao projeto" class="submit-button" />
+                    <div>
+                        <Link to={`/projetos/${idLogin}`}>Voltar para meus projetos</Link>
+                    </div>
                 </Form>
             </Formik>
-            <a href="/projetos">Voltar para meus projetos</a>
         </main>
     );
 };
