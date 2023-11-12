@@ -10,18 +10,18 @@ const LinkProject = () => {
     const { idLogin } = useParams();
 
     const handleLinkProject = (values) => {
-        console.log("oioioi:", values.idProject, values.email)
         vincularAoProjeto(values.idProject, values.email)
             .then((response) => {
                 if (response.data.msg === "Vinculado com sucesso") {
                     const idLogin = response.data.idLogin;
-                    alert("Projeto criado com sucesso. Clique em OK para voltar para a página de projetos.");
+                    alert("Projeto vinculado com sucesso. Clique em OK para voltar para a página de projetos.");
                     setTimeout(() => {
                         navigate(`/projetos/${idLogin}`);
                     }, 1000);
                 }
                 else {
                     alert("Não foi encontrado nenhum projeto com essas informações.");
+                    console.log(response);
                 }
             })
             .catch((error) => {

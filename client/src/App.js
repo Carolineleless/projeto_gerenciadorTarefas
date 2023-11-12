@@ -22,10 +22,8 @@ function App() {
         <Route path="/vincular_projeto/:idLogin" element={<LinkProjectPage />} />
         <Route path="/abrir_projeto/:idLogin" element={<OpenProjectPage />} />
 
-
-        <Route path="/" element={<h1>caindo aqui</h1>} />
+        <Route path="/" element={<LoginPage />} />
       </Routes>
-      {/* <NavigationLinks /> */}
     </Router>
   );
 }
