@@ -1,22 +1,46 @@
-// components/RegisterPage.js
-
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { validationsRegister } from "../model/AuthModel";
 import { register } from "../controller/AuthController";
 import "./Register.css";
+import { useNavigate } from 'react-router-dom';
 
 const Register = () => {
+    const [showNotification, setShowNotification] = useState(false);
+    const navigate = useNavigate();
+    const isMounted = useRef(true); 
+
     const handleRegister = (values) => {
         register(values.email, values.name, values.office, values.occupationArea, values.responsibleName, values.password)
             .then((response) => {
-                alert(response.data.msg);
-                console.log(response);
+                if (response.data.msg === "Usuário cadastrado com sucesso") {
+                    setShowNotification(true);
+                    
+                    setTimeout(() => {
+                        navigate("/login");
+                    }, 4000);
+                } else {
+                    alert("Não foi possível realizar o cadastro.");
+                    console.log(response);
+                }
             })
             .catch((error) => {
-                console.error(error);
+                console.error("Erro na solicitação Axios:", error);
+                alert("Erro na solicitação Axios. Verifique a console para detalhes.");
             });
     };
+
+    useEffect(() => {
+        // Define um temporizador para esconder a notificação após 10 segundos
+        const timer = setTimeout(() => {
+            setShowNotification(false);
+        }, 60000);
+
+        return () => {
+            clearTimeout(timer);
+            isMounted.current = false;
+        };
+    }, [showNotification]);
 
     return (
         <main>
@@ -69,7 +93,7 @@ const Register = () => {
                             className="form-error"
                         />
                     </div>
-                    <label>Nome do responsável (caso você seja o responsável, deixe em branco)</label>
+                    <label>Nome do responsável</label>
                     <div className="register-form-group">
                         <Field class="field-form" name="responsibleName" className="form-field" placeholder="nome do responsável"/>
                         <br/>
@@ -100,9 +124,16 @@ const Register = () => {
                             className="form-error"
                         />
                     </div>
-                    <input type="submit" value="Criar Conta" class="submit-button"/>
+                    <input type="submit" value="Criar Conta" className="submit-button"/>
                 </Form>
             </Formik>
+
+            {showNotification && (
+                <div className="success-notification">
+                    <p>Registro bem-sucedido! Redirecionando para a página de login em breve...</p>
+                </div>
+            )}
+
             <a href="/login">Voltar para login</a>
         </main>
     );

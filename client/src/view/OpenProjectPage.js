@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { abrirProjeto, criarTarefa, excluirTarefa } from "../controller/AuthController";
+import { abrirProjeto, criarTarefa, excluirTarefa, editarTarefa } from "../controller/AuthController";
 import Modal from "react-modal";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as yup from 'yup';
 import { validationsOpenProject } from "../model/OpenProjectModel";
+import io from "socket.io-client";
 
 const OpenProject = () => {
   const { idLogin } = useParams();
@@ -30,7 +31,16 @@ const OpenProject = () => {
   const [taskDependencies, setTaskDependencies] = useState([]);
   const [taskObservation, setTaskObservation] = useState([]);
   const [showCriacaoTarefaNotification, setShowCriacaoTarefaNotification] = useState(false);
-
+  const [showEdicaoNotification, setShowEdicaoNotification] = useState(false);
+  const [editableTaskName, setEditableTaskName] = useState("");
+  const [editableResponsable, setEditableResponsable] = useState("");
+  const [editableDescription, setEditableDescription] = useState("");
+  const [editableStatus, setEditableStatus] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [currentMessage, setCurrentMessage] = useState("");
+  const [userName, setUserName] = useState("");
+  const [socket, setSocket] = useState(null);
 
   const navigate = useNavigate();
 
@@ -43,6 +53,8 @@ const OpenProject = () => {
         const responsable = response.data.responsable;
         const idProject = response.data.idProject;
         const taskNames = Object.values(response.data.taskName);
+      
+
         setTaskDescription(response.data.taskDescription);
         setTaskStartDate(response.data.taskStartDate);
         setTaskFinalDate(response.data.taskFinalDate);
@@ -50,10 +62,10 @@ const OpenProject = () => {
         setTaskResponsable(response.data.taskResponsable)
         setTaskDependencies(response.data.taskDependencies);
         setTaskObservation(response.data.taskObservation);
+        setUserName(response.data.userName);
 
-
-        const filteredTaskNames = taskNames.filter(value => typeof value === 'string'); // Filtrar apenas as strings (nomes das tarefas)
-        console.log(description, members);
+        const filteredTaskNames = taskNames.filter(value => typeof value === 'string');
+        console.log("dados:", description);
         setAbrirProjeto(response.data);
         setNameProject(projectName);
         setDescription(description);
@@ -61,12 +73,41 @@ const OpenProject = () => {
         setResponsable(responsable);
         setIdProject(idProject);
         setTaskNames(taskNames);
-
+        setSocket(newSocket);
       })
       .catch((error) => {
         console.error(error);
       });
+
+    // Configuração do Socket.io
+    const newSocket = io("http://localhost:3002", {
+      transports: ['websocket', 'polling']
+    });
+
+    newSocket.on('chat message', (msg) => {
+      setMessages((prevMessages) => [...prevMessages, msg]);
+    });
+
+    setSocket(newSocket);
+
+    return () => {
+      if (newSocket) {
+        newSocket.off('chat message');
+        newSocket.disconnect();
+      }
+    };
+
+
   }, [idLogin]);
+
+
+  const sendMessage = () => {
+    if (currentMessage.trim() !== "" && socket) {
+      const messageWithSender = `${userName}: ${currentMessage}`;
+      socket.emit('chat message', messageWithSender);
+      setCurrentMessage("");
+    }
+  };
 
   const handleVerTarefa = (taskName) => {
     const taskIndex = taskNames.indexOf(taskName);
@@ -85,6 +126,65 @@ const OpenProject = () => {
     setShowTarefaModal(true);
   };
 
+  const handleEditarTarefa = (taskName) => {
+    const taskIndex = taskNames.indexOf(taskName);
+    const selectedTaskDetails = {
+      name: taskName,
+      responsable: taskResponsable[taskIndex],
+      description: taskDescription[taskIndex],
+      startDate: taskStartDate[taskIndex],
+      endDate: taskFinalDate[taskIndex],
+      status: taskStatus[taskIndex],
+      dependencies: taskDependencies[taskIndex],
+      observation: taskObservation[taskIndex]
+    };
+
+    setSelectedTask(selectedTaskDetails);
+    setEditableTaskName(selectedTaskDetails.name);
+    setEditableResponsable(selectedTaskDetails.responsable);
+    setEditableDescription(selectedTaskDetails.description);
+    setEditableStatus(selectedTaskDetails.status);
+    setIsEditing(true);
+  };
+
+
+  const handleSalvarEdicao = async () => {
+    try {
+      const updatedTask = {
+        name: editableTaskName,
+        responsable: editableResponsable,
+        description: editableDescription,
+        status: editableStatus,
+      };
+
+      const originalTask = {
+        name: selectedTask.name,
+        responsable: selectedTask.responsable,
+        description: selectedTask.description,
+        status: selectedTask.status,
+      };
+
+      const response = await editarTarefa(idProject, updatedTask, originalTask);
+
+      if (response.data.msg === "Tarefa editada com sucesso") {
+        setShowEdicaoNotification(true);
+        setIsEditing(false);
+        setSelectedTask(null);
+      } else {
+        console.error(response.msg);
+        alert('Não foi possível editar a tarefa. Tente novamente.');
+      }
+    } catch (error) {
+      console.error('Erro ao chamar o método editarTarefa:', error);
+      alert('Erro ao editar a tarefa. Tente novamente.');
+    }
+  };
+
+  const handleAtualizarPagina = () => {
+    setShowEdicaoNotification(false);
+    window.location.reload();
+  };
+
   const handleExcluirTarefa = (taskName) => {
     excluirTarefa(
       taskName,
@@ -99,6 +199,7 @@ const OpenProject = () => {
           setTaskNames((prevTaskNames) => prevTaskNames.filter((name) => name !== taskName));
         } else {
           alert("Não foi possível deletar a tarefa. Tente novamente.");
+          console.log(response);
         }
       })
   };
@@ -116,6 +217,7 @@ const OpenProject = () => {
       idProject
     )
       .then((response) => {
+        console.log("resp", response);
         if (response.data.msg === "task inserida com sucesso") {
           setTaskNames((prevTaskNames) => [...prevTaskNames, values.taskName]);
           setTaskResponsable((prevTaskResponsable) => [...prevTaskResponsable, values.taskResponsable]);
@@ -125,12 +227,8 @@ const OpenProject = () => {
           setTaskFinalDate((prevTaskFinalDate) => [...prevTaskFinalDate, values.taskFinalDate]);
           setTaskDependencies((prevTaskDependencies) => [...prevTaskDependencies, values.taskDependencies]);
           setTaskObservation((prevTaskObservation) => [...prevTaskObservation, values.taskObservation]);
-
-
           setAbrirProjeto(response.data);
-          setNameProject(response.data.nameProject);
-          setDescription(response.data.description);
-          setMembers(response.data.members);
+        
 
           setShowCriacaoTarefaNotification(true);
           setTimeout(() => {
@@ -167,17 +265,49 @@ const OpenProject = () => {
         contentLabel="Visualizar Tarefa Modal"
       >
         {selectedTask ? (
-          <div>
-            <h2>{selectedTask.name}</h2>
-            <p>Responsável pela tarefa: {selectedTask.responsable}</p>
-            <p>Descrição da tarefa: {selectedTask.description}</p>
-            <p>Início da tarefa: {selectedTask.startDate}</p>
-            <p>Fim da tarefa: {selectedTask.endDate}</p>
-            <p>Status da tarefa: {selectedTask.status}</p>
-            <p>Dependências da tarefa: {selectedTask.dependencies}</p>
-            <p>Observação: {selectedTask.observation}</p>
-            <button onClick={() => setShowTarefaModal(false)}>Fechar</button>
-          </div>
+          isEditing ? (
+            <div>
+              <label>Nome da tarefa</label>
+              <input
+                type="text"
+                value={editableTaskName}
+                onChange={(e) => setEditableTaskName(e.target.value)}
+              />
+
+              <label>Responsável pela tarefa</label>
+              <input
+                type="text"
+                value={editableResponsable}
+                onChange={(e) => setEditableResponsable(e.target.value)}
+              />
+
+              <label>Descrição da tarefa</label>
+              <input
+                type="text"
+                value={editableDescription}
+                onChange={(e) => setEditableDescription(e.target.value)}
+              />
+
+              <label>Status da tarefa</label>
+              <input
+                type="text"
+                value={editableStatus}
+                onChange={(e) => setEditableStatus(e.target.value)}
+              />
+            </div>
+          ) : (
+            <div>
+              <h2>{selectedTask.name}</h2>
+              <p>Responsável pela tarefa: {selectedTask.responsable}</p>
+              <p>Descrição da tarefa: {selectedTask.description}</p>
+              <p>Início da tarefa: {selectedTask.startDate}</p>
+              <p>Fim da tarefa: {selectedTask.endDate}</p>
+              <p>Status da tarefa: {selectedTask.status}</p>
+              <p>Dependências da tarefa: {selectedTask.dependencies}</p>
+              <p>Observação: {selectedTask.observation}</p>
+              <button onClick={() => setShowTarefaModal(false)}>Fechar</button>
+            </div>
+          )
         ) : (
           <p>Nenhuma tarefa selecionada.</p>
         )}
@@ -199,7 +329,9 @@ const OpenProject = () => {
         contentLabel="Membros Modal"
       >
         <h2>Membros</h2>
-        <p>{members}</p>
+        {members.map((member, index) => (
+          <p key={index}>{member}</p>
+        ))}
         <button onClick={() => setShowMembros(false)}>Fechar</button>
       </Modal>
 
@@ -217,6 +349,12 @@ const OpenProject = () => {
         </div>
       )}
 
+      {showEdicaoNotification && (
+        <div className="success-notification">
+          <p>A edição foi salva com sucesso.</p>
+          <button onClick={handleAtualizarPagina}>Atualizar Página</button>
+        </div>
+      )}
 
       <br />
 
@@ -227,16 +365,82 @@ const OpenProject = () => {
             <li key={index}>
               {taskName}
               <p>Responsável: {taskResponsable[index]}</p>
+              <p>Descrição: {taskDescription[index]}</p>
               <p>Status: {taskStatus[index]}</p>
-              <button onClick={() => handleVerTarefa(taskName)}>Ver Tarefa</button>
-              <button onClick={() => handleExcluirTarefa(taskName)}>Excluir Tarefa</button>
+              {isEditing && selectedTask.name === taskName ? (
+                <div>
+                  <div>
+                    <label>Nome da tarefa</label>
+                    <input
+                      type="text"
+                      value={editableTaskName}
+                      onChange={(e) => setEditableTaskName(e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <label>Responsável pela tarefa</label>
+                    <input
+                      type="text"
+                      value={editableResponsable}
+                      onChange={(e) => setEditableResponsable(e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <label>Descrição da tarefa</label>
+                    <input
+                      type="text"
+                      value={editableDescription}
+                      onChange={(e) => setEditableDescription(e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <label>Status da tarefa</label>
+                    <input
+                      type="text"
+                      value={editableStatus}
+                      onChange={(e) => setEditableStatus(e.target.value)}
+                    />
+                  </div>
+
+                  <button onClick={() => handleSalvarEdicao(selectedTask.name, selectedTask)}>Salvar Edição</button>
+
+                </div>
+
+              ) : (
+                <div>
+                  <button onClick={() => handleVerTarefa(taskName)}>Ver Tarefa</button>
+                  <button onClick={() => handleExcluirTarefa(taskName)}>Excluir Tarefa</button>
+                  <button onClick={() => handleEditarTarefa(taskName)}>Editar Tarefa</button>
+                </div>
+              )}
             </li>
           ))}
         </ul>
       ) : (
-        <p>Nenhuma tarefa criada ainda.</p>
+        <p>Nenhuma tarefa foi criada.</p>
       )}
       <button onClick={() => setShowCriarTarefa(true)}>Criar tarefa</button>
+
+
+      <br></br>
+      <div>
+        <h2>Chat</h2>
+        <div>
+          {messages.map((msg, index) => (
+            <div key={index}>{msg}</div>
+          ))}
+        </div>
+        <input
+          type="text"
+          value={currentMessage}
+          onChange={(e) => setCurrentMessage(e.target.value)}
+        />
+        <button onClick={sendMessage}>Enviar</button>
+      </div>
+
 
       <Modal
         isOpen={showCriarTarefa}

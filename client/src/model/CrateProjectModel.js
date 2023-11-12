@@ -10,6 +10,5 @@ export const validationsCreateProject = yup.object().shape({
     .required("A data de conclusão é obrigatória"),
   restriction: yup.string().required("As restrições são obrigatórias"),
   description: yup.string().required("A descrição é obrigatória"),
-  team: yup.string().required("A equipe é obrigatória"),
   responsable: yup.string().required("O responsável é obrigatório"),
 });

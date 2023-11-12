@@ -17,6 +17,7 @@ const Login = () => {
                     navigate(`/projetos/${idLogin}`);
                 }
                 else {
+                    alert("Não foi possível realizar o cadastro.");
                     console.log("erro ao logar usuario");
                 }
             })

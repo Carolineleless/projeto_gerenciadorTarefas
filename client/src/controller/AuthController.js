@@ -13,8 +13,8 @@ export const verProjeto = (idLogin) => {
   return Axios.post("http://localhost:3001/verProjeto", { idLogin });
 }
 
-export const criarProjeto = (name, type, company, startDate, finalDate, restriction, description, team, responsable, idLogin) => {
-  return Axios.post("http://localhost:3001/criarProjeto", { name, type, company, startDate, finalDate, restriction, description, team, responsable, idLogin });
+export const criarProjeto = (name, type, company, startDate, finalDate, restriction, description, responsable, idLogin) => {
+  return Axios.post("http://localhost:3001/criarProjeto", { name, type, company, startDate, finalDate, restriction, description, responsable, idLogin });
 }
 
 export const vincularAoProjeto = (idProject, email) => {
@@ -32,4 +32,9 @@ export const criarTarefa = (taskName, taskResponsable, taskDescription, taskStar
 
 export const excluirTarefa = (taskName, idProject) => {
   return Axios.post("http://localhost:3001/excluirTarefa", { taskName, idProject });
+}
+
+export const editarTarefa = (idProject, updatedTask, originalTask) => {
+  console.log("debugg: ", idProject, updatedTask, originalTask);
+  return Axios.post("http://localhost:3001/editarTarefa", { idProject, updatedTask, originalTask });
 }

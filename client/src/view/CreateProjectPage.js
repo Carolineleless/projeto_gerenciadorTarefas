@@ -12,7 +12,7 @@ const CreateProject = () => {
   const navigate = useNavigate();
 
   const handleCreateProject = (values) => {
-    criarProjeto(values.name, values.type, values.company, values.startDate, values.finalDate, values.restriction, values.description, values.team, values.responsable, idLogin)
+    criarProjeto(values.name, values.type, values.company, values.startDate, values.finalDate, values.restriction, values.description, values.responsable, idLogin)
       .then((response) => {
         if (response.data.msg === "Projeto criado com sucesso") {
           console.log(response.data);
@@ -21,7 +21,8 @@ const CreateProject = () => {
             navigate(`/projetos/${idLogin}`);
           }, 1000);
         } else {
-          console.log("Erro ao criar projeto");
+          alert("Usuário ja possui um projeto.");
+          console.log(response);
         }
       })
       .catch((error) => {
@@ -153,22 +154,6 @@ const CreateProject = () => {
               name="description"
               className="form-error"
             />
-          </div>
-
-          <label htmlFor="team">Equipe:</label>
-          <div>
-            <Field
-              type="text"
-              id="team"
-              name="team"
-              class="field-form"
-              className="form-field"
-              placeholder="Equipe"
-            />
-            <ErrorMessage
-              component="span"
-              name="team"
-              className="form-error" />
           </div>
 
           <label htmlFor="responsable">Responsável:</label>
