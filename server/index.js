@@ -109,8 +109,17 @@ app.post("/criarProjeto", (req, res) => {
         console.log("errooor:", error);
         res.status(500).json({ error: "Erro ao criar o projeto" });
       } else {
+
         const idProject = response.insertId;
-        res.status(200).json({ msg: "Projeto criado com sucesso", idProject: idProject });
+
+        db.query("INSERT INTO userProject (idLogin, idProject, nameProject) VALUES (?, ?, ?)", [idLogin, idProject, name], (insertErr, insertResult) => {
+          if (insertErr) {
+            console.log("error aqui 4:", insertErr);
+            return res.status(500).json({ error: "Erro ao inserir dados na tabela userData" });
+          }
+            res.status(200).json({ msg: "Projeto criado com sucesso", idProject: idProject, nameProject: name});
+          }
+        )
       }
     }
   );
