@@ -25,7 +25,7 @@ const ProjetosPage = () => {
 
   return (
     <main>
-      <h1>Projeto</h1>
+      <h1>Projetos</h1>
 
       {hasProject ? (
         <React.Fragment>
@@ -44,13 +44,13 @@ const ProjetosPage = () => {
           <section className="project-list">
             <div className="project-item">
               <Link to={`/vincular_projeto/${idLogin}`}>
-                <button>Vincular-se a um projeto</button>
+                <button class="standard-button">Vincular-se a um projeto</button>
               </Link>
             </div>
             <br />
             <div className="project-item">
               <Link to={`/criar_projeto/${idLogin}`}>
-                <button>Criar projeto</button>
+                <button class="standard-button">Criar projeto</button>
               </Link>
             </div>
           </section>

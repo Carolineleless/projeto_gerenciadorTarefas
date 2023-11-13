@@ -106,7 +106,7 @@ const Register = () => {
                     
                     <label>Senha</label>
                     <div className="form-group">
-                        <Field class="field-form" name="password" className="form-field" placeholder="Senha" />
+                        <Field class="field-form" name="password" className="form-field" placeholder="Senha" type="password"/>
                         <br/>
                         <ErrorMessage
                             component="span"
@@ -116,7 +116,7 @@ const Register = () => {
                     </div>
                     <label>Confirmar Senha</label>
                     <div className="form-group">
-                        <Field class="field-form" name="confirmation" className="form-field" placeholder="Senha"/>
+                        <Field class="field-form" name="confirmation" className="form-field" placeholder="Senha" type="password"/>
                         <br/>
                         <ErrorMessage
                             component="span"

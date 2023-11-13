@@ -8,9 +8,9 @@ const http = require('http');
 const socketIo = require('socket.io');
 
 const db = mysql.createPool({
-  host: "localhost", // ALTERAR PARA 127.0.0.1 PARA ERRO DE CONEXAO
+  host: "127.0.0.1", // ALTERAR PARA 127.0.0.1 PARA ERRO DE CONEXAO
   user: "root",
-  password: "root",
+  password: "P*e*d*r*o*16541815",
   database: "gerenciadorTarefas"
 });
 

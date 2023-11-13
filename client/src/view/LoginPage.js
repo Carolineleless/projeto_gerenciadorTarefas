@@ -48,7 +48,7 @@ const Login = () => {
                     </div>
                     <label class="label">Senha</label>
                     <div className="form-group">
-                        <Field name="password" className="form-field" placeholder="Senha" />
+                        <Field name="password" className="form-field" placeholder="Senha" type="password"/>
                         <ErrorMessage
                             component="span"
                             name="password"

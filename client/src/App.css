@@ -15,4 +15,42 @@ body {
 
 #root {
     display: flex;
-  }
+}
+
+.standard-button {
+    margin: 10px auto 10px auto;
+    width: 180px;
+    height: 35px;
+    color: var(--black);
+    background-color: var(--yellow);
+    border-style: none;
+    border-radius: 5px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+}
+
+.standard-button:hover {
+    background-color: var(--black);
+    color: var(--white);
+}
+
+.project-list {
+    display: flex;
+    margin: auto;
+}
+
+p {
+    align-self: center;
+}
+
+.createProject-form {
+    display: flex;
+    flex-direction: row;
+}
+
+.form-section {
+    display: flex;
+    flex-direction: column;
+    margin: 10px 50px 10px 50px;
+    align-items: center;
+}
